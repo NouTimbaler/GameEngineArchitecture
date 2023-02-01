@@ -1,0 +1,20 @@
+- Linux compatibility
+
+    - Install linux packages for sdl2:
+            sdl2, sdl2_mixer, sdl2_ttf, sdl2_image
+        the packages names might differ for other distributions.
+
+    - Change paths to linux paths: 
+        Bootstrap.cs:63:            setupEnvironmentalVariables(baseDir + "\\" + "envar.cfg");
+        Bootstrap.cs:64:            setup(baseDir + "\\" + DEFAULT_CONFIG);
+        AssetManager.cs:27:         string[] bits = path.Split ("\\");
+
+    - Change the comically large number of .Parent calls:
+        Bootstrap.cs:61:            baseDir = Directory.GetParent(workDir).Parent.Parent.Parent.Parent.FullName;
+
+    - Install/change font:
+        my solution was to install the Calibri font in the Fonts folder on the
+        base directory of the project.
+            DisplayText.cs:177:         IntPtr font = loadFont("Fonts/calibri.ttf", size);
+
+

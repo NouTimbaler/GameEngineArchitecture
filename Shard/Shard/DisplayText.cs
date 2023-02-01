@@ -174,7 +174,7 @@ namespace Shard
         {
             int nx, ny, w = 0, h = 0;
 
-            IntPtr font = loadFont("Fonts/calibri.ttf", size);
+            IntPtr font = loadFont(Bootstrap.getBaseDir() + "/Fonts/Calibri.ttf", size);
             SDL.SDL_Color col = new SDL.SDL_Color();
 
             col.r = (byte)r;

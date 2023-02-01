@@ -1,26 +1,26 @@
 ﻿/*
-*
-*   The Shard Physics Manager.   
-*   
-*   As with the PhysicsBody class, upon which this class depends, I make no claims as to the 
-*       accuracy of the physics.  My interest in this course is showing you how an engine is 
-*       architected.  It's not a course on game physics.  The task of making this work in 
-*       a way that simulates real world physics is well beyond the scope of the course. 
-*       
-*   This class is responsible for a lot.  It handles the broad phase collision 
-*       detection (via Sweep and Prune).  It handles the narrow phase collisions, making use of the 
-*       collider objects and the Minkowski differences they generate.  It does some collision resolutions 
-*       that are linked to the mass of colliding bodies.  And it has the management routines that 
-*       let all that happen.
-*       
-*   @author Michael Heron
-*   @version 1.0
+ *
+ *   The Shard Physics Manager.   
+ *   
+ *   As with the PhysicsBody class, upon which this class depends, I make no claims as to the 
+ *       accuracy of the physics.  My interest in this course is showing you how an engine is 
+ *       architected.  It's not a course on game physics.  The task of making this work in 
+ *       a way that simulates real world physics is well beyond the scope of the course. 
+ *       
+ *   This class is responsible for a lot.  It handles the broad phase collision 
+ *       detection (via Sweep and Prune).  It handles the narrow phase collisions, making use of the 
+ *       collider objects and the Minkowski differences they generate.  It does some collision resolutions 
+ *       that are linked to the mass of colliding bodies.  And it has the management routines that 
+ *       let all that happen.
+ *       
+ *   @author Michael Heron
+ *   @version 1.0
 
-*   Several substantial contributions to the code made by others:
-*   @author Mårten Åsberg (see Changelog for 1.0.1)
-*
-*   
-*/
+ *   Several substantial contributions to the code made by others:
+ *   @author Mårten Åsberg (see Changelog for 1.0.1)
+ *
+ *   
+ */
 
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Shard
         public override bool Equals(object other) {
             return other is CollidingObject co &&
                 (A == co.A && B == co.B ||
-                A == co.B && B == co.A);
+                 A == co.B && B == co.A);
         }
 
         public override int GetHashCode() {
@@ -90,7 +90,7 @@ namespace Shard
         private static PhysicsManager me;
         private List<CollidingObject> collisionsToCheck;
         HashSet<CollidingObject> colliding;
-            
+
         private long timeInterval;
         SAPEntry sapX, sapY;
         float gravityModifier;
@@ -115,7 +115,7 @@ namespace Shard
             // 50 FPS            
 
             TimeInterval = 20;
-            
+
             if (Bootstrap.checkEnvironmentalVariable("gravity_modifier"))
             {
                 gravityModifier = float.Parse
@@ -137,10 +137,10 @@ namespace Shard
                 gravityDir = new Vector2 (0, 1);
             }
 
-            
-    }
 
-    public static PhysicsManager getInstance()
+        }
+
+        public static PhysicsManager getInstance()
         {
             if (me == null)
             {
@@ -169,7 +169,7 @@ namespace Shard
 
         public void removePhysicsObject(PhysicsBody body)
         {
-                allPhysicsObjects.Remove(body);           
+            allPhysicsObjects.Remove(body);           
         }
 
         public void clearList(SAPEntry node)
@@ -352,10 +352,10 @@ namespace Shard
 
 
 
-                //            Debug.Log("Time Interval is " + (Bootstrap.getCurrentMillis() - lastUpdate) + ", " + colliding.Count);
+            //            Debug.Log("Time Interval is " + (Bootstrap.getCurrentMillis() - lastUpdate) + ", " + colliding.Count);
 
 
-                return true;
+            return true;
         }
 
         public void drawDebugColliders()
@@ -430,13 +430,13 @@ namespace Shard
                 }
             }
 
-//            Debug.Log("Checking " + collisionsToCheck.Count + " collisions");
+            //            Debug.Log("Checking " + collisionsToCheck.Count + " collisions");
 
         }
 
         public bool findColliding(PhysicsBody a, PhysicsBody b) {
             CollidingObject col = new CollidingObject (a, b);
-              
+
             return colliding.Contains(col);
         }
 
@@ -658,7 +658,7 @@ namespace Shard
         public void broadPass()
         {
             broadPassSearchAndSweep();
-//          broadPassBruteForce();
+            //          broadPassBruteForce();
         }
 
 
