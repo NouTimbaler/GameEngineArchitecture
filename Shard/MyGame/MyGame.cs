@@ -24,7 +24,12 @@ namespace Shard
         }
         public void createShip()
         {
-            GameObject ship = new Spaceship();
+            background = new GameObject();
+
+            Spaceship ship = new Spaceship();
+            Spaceship ship2 = new Spaceship();
+            ship2.changePlayer();
+
             Random rand = new Random();
             int offsetx = 0, offsety = 0;
 
@@ -37,8 +42,7 @@ namespace Shard
      
 
 
-            background = new GameObject();
-            background.Transform.SpritePath = getAssetManager().getAssetPath ("background2.jpg");
+            background.Transform.SpritePath = getAssetManager().getAssetPath("background2.jpg");
             background.Transform.X = 0;
             background.Transform.Y = 0;
 

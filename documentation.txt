@@ -18,3 +18,8 @@
             DisplayText.cs:177:         IntPtr font = loadFont("Fonts/calibri.ttf", size);
 
 
+- Small changes
+    
+    - Default update for gameObject is addToDraw(this)
+
+

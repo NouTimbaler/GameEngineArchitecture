@@ -55,5 +55,6 @@ namespace Shard
             }
         }
         public abstract void getInput();
+
     }
 }

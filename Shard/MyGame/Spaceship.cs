@@ -7,12 +7,13 @@ namespace MyGame
     class Spaceship : GameObject, InputListener, CollisionHandler
     {
         bool up, down, turnLeft, turnRight;
+        int upKey, downKey, leftKey, rightKey;
 
 
         public override void initialize()
         {
 
-            this.Transform.X = 500.0f;
+            this.Transform.X = 250.0f;
             this.Transform.Y = 500.0f;
             this.Transform.SpritePath = Bootstrap.getAssetManager().getAssetPath("spaceship.png");
 
@@ -21,6 +22,11 @@ namespace MyGame
 
             up = false;
             down = false;
+
+            upKey = InputCode.Shard_W;
+            downKey = InputCode.Shard_S;
+            leftKey = InputCode.Shard_A;
+            rightKey = InputCode.Shard_D;
 
             setPhysicsEnabled();
 
@@ -47,6 +53,18 @@ namespace MyGame
 
         }
 
+        public void changePlayer()
+        {
+            this.Transform.X = 250.0f * 2;
+            this.Transform.Y = 500.0f;
+
+            upKey = InputCode.Shard_I;
+            downKey = InputCode.Shard_K;
+            leftKey = InputCode.Shard_J;
+            rightKey = InputCode.Shard_L;
+
+        }
+
         public void fireBullet()
         {
             Bullet b = new Bullet();
@@ -65,22 +83,22 @@ namespace MyGame
 
             if (eventType == "KeyDown")
             {
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_W)
+                if (inp.Key == upKey)
                 {
                     up = true;
                 }
 
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_S)
+                if (inp.Key == downKey)
                 {
                     down = true;
                 }
 
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_D)
+                if (inp.Key == rightKey)
                 {
                     turnRight = true;
                 }
 
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_A)
+                if (inp.Key == leftKey)
                 {
                     turnLeft = true;
                 }
@@ -88,22 +106,22 @@ namespace MyGame
             }
             else if (eventType == "KeyUp")
             {
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_W)
+                if (inp.Key == upKey)
                 {
                     up = false;
                 }
 
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_S)
+                if (inp.Key == downKey)
                 {
                     down = false;
                 }
 
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_D)
+                if (inp.Key == rightKey)
                 {
                     turnRight = false;
                 }
 
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_A)
+                if (inp.Key == leftKey)
                 {
                     turnLeft = false;
                 }
@@ -115,7 +133,7 @@ namespace MyGame
 
             if (eventType == "KeyUp")
             {
-                if (inp.Key == (int)SDL.SDL_Scancode.SDL_SCANCODE_SPACE)
+                if (inp.Key == InputCode.Shard_SPACE)
                 {
                     fireBullet();
                 }
