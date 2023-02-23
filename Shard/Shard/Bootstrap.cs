@@ -208,7 +208,7 @@ namespace Shard
 
 
 
-            Debug.Log ("Frametimes is " + frameTimes.Count);
+            //Debug.Log ("Frametimes is " + frameTimes.Count);
 
             if (frameTimes.Count == 0) {
                 return -1;

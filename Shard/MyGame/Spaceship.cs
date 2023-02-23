@@ -13,8 +13,8 @@ namespace MyGame
         public override void initialize()
         {
 
-            this.Transform.X = 250.0f;
-            this.Transform.Y = 500.0f;
+            this.Transform.X = 340.0f;
+            this.Transform.Y = 400.0f;
             this.Transform.SpritePath = Bootstrap.getAssetManager().getAssetPath("spaceship.png");
 
 
@@ -32,8 +32,9 @@ namespace MyGame
 
             MyBody.Mass = 1;
             MyBody.MaxForce = 10;
-            MyBody.AngularDrag = 0.01f;
-            MyBody.Drag = 0f;
+            MyBody.MaxTorque = 5;
+            MyBody.AngularDrag = 0.5f;
+            MyBody.Drag = 0.5f;
             MyBody.StopOnCollision = false;
             MyBody.ReflectOnCollision = false;
             MyBody.ImpartForce = false;
@@ -55,8 +56,8 @@ namespace MyGame
 
         public void changePlayer()
         {
-            this.Transform.X = 250.0f * 2;
-            this.Transform.Y = 500.0f;
+            this.Transform.X = 740;
+            this.Transform.Y = 400.0f;
 
             upKey = InputCode.Shard_I;
             downKey = InputCode.Shard_K;
@@ -101,6 +102,7 @@ namespace MyGame
                 if (inp.Key == leftKey)
                 {
                     turnLeft = true;
+                    Debug.getInstance().log(ToString());
                 }
 
             }
@@ -145,24 +147,24 @@ namespace MyGame
 
             if (turnLeft)
             {
-                MyBody.addTorque(-0.3f);
+                MyBody.addTorque(-1f);
             }
 
             if (turnRight)
             {
-                MyBody.addTorque(0.3f);
+                MyBody.addTorque(1f);
             }
 
             if (up)
             {
 
-                MyBody.addForce(this.Transform.Forward, 0.5f);
+                MyBody.addForce(this.Transform.Forward, 1f);
 
             }
 
             if (down)
             {
-                MyBody.addForce(this.Transform.Forward, -0.2f);
+                MyBody.addForce(this.Transform.Forward, -1f);
             }
 
 

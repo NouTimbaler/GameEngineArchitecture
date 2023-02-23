@@ -49,12 +49,31 @@ namespace Shard
         public int A { get => a; set => a = value; }
     }
 
+    class Rectangle
+    {
+        private int x, y;
+        private int w, h;
+        private int r, g, b, a;
+        private bool fill;
+
+        public int X { get => x; set => x = value; }
+        public int Y { get => y; set => y = value; }
+        public int W { get => w; set => w = value; }
+        public int H { get => h; set => h = value; }
+        public int R { get => r; set => r = value; }
+        public int G { get => g; set => g = value; }
+        public int B { get => b; set => b = value; }
+        public int A { get => a; set => a = value; }
+        public bool Fill { get => fill; set => fill = value; }
+    }
+
 
     class DisplaySDL : DisplayText
     {
         private List<Transform> _toDraw;
         private List<Line> _linesToDraw;
         private List<Circle> _circlesToDraw;
+        private List<Rectangle> _rectanglesToDraw;
         private Dictionary<string, IntPtr> spriteBuffer;
         public override void initialize()
         {
@@ -65,6 +84,7 @@ namespace Shard
             _toDraw = new List<Transform>();
             _linesToDraw = new List<Line>();
             _circlesToDraw = new List<Circle>();
+            _rectanglesToDraw = new List<Rectangle>();
 
 
         }
@@ -203,6 +223,40 @@ namespace Shard
 
             _linesToDraw.Add(l);
         }
+        public override void drawRectangle(int x, int y, int w, int h, int r, int g, int b, int a)
+        {
+            Rectangle re = new Rectangle();
+            re.X = x;
+            re.Y = y;
+            re.W = w;
+            re.H = h;
+
+            re.R = r;
+            re.G = g;
+            re.B = b;
+            re.A = a;
+
+            re.Fill = false;
+
+            _rectanglesToDraw.Add(re);
+        }
+        public override void drawFilledRectangle(int x, int y, int w, int h, int r, int g, int b, int a)
+        {
+            Rectangle re = new Rectangle();
+            re.X = x;
+            re.Y = y;
+            re.W = w;
+            re.H = h;
+
+            re.R = r;
+            re.G = g;
+            re.B = b;
+            re.A = a;
+
+            re.Fill = true;
+
+            _rectanglesToDraw.Add(re);
+        }
 
         public override void display()
         {
@@ -247,6 +301,19 @@ namespace Shard
                 SDL.SDL_RenderDrawLine(_rend, l.Sx, l.Sy, l.Ex, l.Ey);
             }
 
+            foreach (Rectangle r in _rectanglesToDraw)
+            {
+                SDL.SDL_Rect rect;
+                rect.x = r.X;
+                rect.y = r.Y;
+                rect.w = r.W;
+                rect.h = r.H;
+
+                SDL.SDL_SetRenderDrawColor(_rend, (byte)r.R, (byte)r.G, (byte)r.B, (byte)r.A);
+                if (r.Fill) SDL.SDL_RenderFillRect(_rend, ref rect);
+                else SDL.SDL_RenderDrawRect(_rend, ref rect);
+            }
+
             // Show it off.
             base.display();
 
@@ -259,6 +326,7 @@ namespace Shard
             _toDraw.Clear();
             _circlesToDraw.Clear();
             _linesToDraw.Clear();
+            _rectanglesToDraw.Clear();
 
             base.clearDisplay();
         }

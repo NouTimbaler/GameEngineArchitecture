@@ -4,6 +4,9 @@
             sdl2, sdl2_mixer, sdl2_ttf, sdl2_image
         the packages names might differ for other distributions.
 
+    - Remove COM references from .csproj file and updet Framework to your
+      version.
+
     - Change paths to linux paths: 
         Bootstrap.cs:63:            setupEnvironmentalVariables(baseDir + "\\" + "envar.cfg");
         Bootstrap.cs:64:            setup(baseDir + "\\" + DEFAULT_CONFIG);
@@ -13,13 +16,15 @@
         Bootstrap.cs:61:            baseDir = Directory.GetParent(workDir).Parent.Parent.Parent.Parent.FullName;
 
     - Install/change font:
-        my solution was to install the Calibri font in the Fonts folder on the
+        my solution was to install the Calibri font in a Fonts folder in the
         base directory of the project.
             DisplayText.cs:177:         IntPtr font = loadFont("Fonts/calibri.ttf", size);
 
 
 - Small changes
     
-    - Default update for gameObject is addToDraw(this)
-
+    - Default update for gameObject is addToDraw(this) (should remove)
+    - Added InputCodes
+    
+    - Added draw rectangles in Display and DisplaySDL
 

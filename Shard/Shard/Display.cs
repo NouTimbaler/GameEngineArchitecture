@@ -46,6 +46,25 @@ namespace Shard
                 rad -= 1;
             }
         }
+        
+        public virtual void drawRectangle(int x, int y, int w, int h, int r, int g, int b, int a)
+        {
+        }
+
+        public virtual void drawRectangle(int x, int y, int w, int h, Color col)
+        {
+            drawRectangle(x, y, w, h, col.R, col.G, col.B, col.A);
+        }
+
+        public virtual void drawFilledRectangle(int x, int y, int w, int h, int r, int g, int b, int a)
+        {
+        }
+
+        public virtual void drawFilledRectangle(int x, int y, int w, int h, Color col)
+        {
+            drawFilledRectangle(x, y, w, h, col.R, col.G, col.B, col.A);
+        }
+
 
         public void showText(string text, double x, double y, int size, Color col)
         {
