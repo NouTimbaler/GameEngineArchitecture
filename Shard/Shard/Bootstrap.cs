@@ -24,6 +24,7 @@ namespace Shard
         private static InputSystem input;
         private static PhysicsManager phys;
         private static AssetManagerBase asset;
+        private static NetworkManager net;
 
         private static int targetFrameRate;
         private static int millisPerFrame;
@@ -106,6 +107,10 @@ namespace Shard
         {
             return runningGame;
         }
+        public static NetworkManager getNetworkManager()
+        {
+            return net;
+        }
 
         public static void setup(string path)
         {
@@ -152,6 +157,10 @@ namespace Shard
                     case "input":
                         input = (InputSystem)ob;
                         input.initialize();
+                        break;
+                    case "net":
+                        net = (NetworkManager)ob;
+                        net.initialize();
                         break;
 
                 }
@@ -281,9 +290,12 @@ namespace Shard
                 if (runningGame.isRunning() == true)
                 {
 
+                    net?.getMessage();
+
                     // Get input, which works at 50 FPS to make sure it doesn't interfere with the 
                     // variable frame rates.
                     input.getInput();
+
 
                     // Update runs as fast as the system lets it.  Any kind of movement or counter 
                     // increment should be based then on the deltaTime variable.
@@ -310,6 +322,8 @@ namespace Shard
                     if (physDebug) {
                         phys.drawDebugColliders();
                     }
+
+                    net?.informState();
 
                 }
 

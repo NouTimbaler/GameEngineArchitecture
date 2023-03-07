@@ -4,21 +4,31 @@ using System.Drawing;
 
 namespace MyGame
 {
-    class Spaceship : GameObject, InputListener, CollisionHandler
+    class Spaceship : NetworkObject, InputListener, CollisionHandler
     {
         bool up, down, turnLeft, turnRight;
         int upKey, downKey, leftKey, rightKey;
+        
+        public int id;
 
+        public Spaceship(bool own) : base(own)
+        {}
+
+        public override void disown()
+        {
+            Bootstrap.getInput().removeListener(this);
+            this.isOwner = false;
+        }
 
         public override void initialize()
         {
+            id = -1;
 
             this.Transform.X = 340.0f;
             this.Transform.Y = 400.0f;
             this.Transform.SpritePath = Bootstrap.getAssetManager().getAssetPath("spaceship.png");
 
-
-            Bootstrap.getInput().addListener(this);
+            if(this.isOwner) Bootstrap.getInput().addListener(this);
 
             up = false;
             down = false;
@@ -50,20 +60,14 @@ namespace MyGame
             MyBody.addRectCollider();
 
             addTag("Spaceship");
-
-
         }
 
-        public void changePlayer()
+        public void changeControls()
         {
-            this.Transform.X = 740;
-            this.Transform.Y = 400.0f;
-
             upKey = InputCode.Shard_I;
             downKey = InputCode.Shard_K;
             leftKey = InputCode.Shard_J;
             rightKey = InputCode.Shard_L;
-
         }
 
         public void fireBullet()
@@ -79,8 +83,7 @@ namespace MyGame
 
         public void handleInput(InputEvent inp, string eventType)
         {
-
-
+            //if (!this.isOwner) return;
 
             if (eventType == "KeyDown")
             {
@@ -102,7 +105,6 @@ namespace MyGame
                 if (inp.Key == leftKey)
                 {
                     turnLeft = true;
-                    Debug.getInstance().log(ToString());
                 }
 
             }
@@ -127,11 +129,7 @@ namespace MyGame
                 {
                     turnLeft = false;
                 }
-
-
             }
-
-
 
             if (eventType == "KeyUp")
             {
@@ -157,17 +155,13 @@ namespace MyGame
 
             if (up)
             {
-
                 MyBody.addForce(this.Transform.Forward, 1f);
-
             }
 
             if (down)
             {
                 MyBody.addForce(this.Transform.Forward, -1f);
             }
-
-
         }
 
         public override void update()
@@ -185,7 +179,6 @@ namespace MyGame
 
         public void onCollisionExit(PhysicsBody x)
         {
-
             MyBody.DebugColor = Color.Green;
         }
 
@@ -197,6 +190,19 @@ namespace MyGame
         public override string ToString()
         {
             return "Spaceship: [" + Transform.X + ", " + Transform.Y + ", " + Transform.Wid + ", " + Transform.Ht + "]";
+        }
+
+        public string getState()
+        {
+            return id + "," + Transform.X + "," + Transform.Y + "," + Transform.Rotz;
+        }
+        public void updateState(string m)
+        {
+            string[] s = m.Split(",");
+            
+            Transform.X = float.Parse(s[1]);
+            Transform.Y = float.Parse(s[2]);
+            Transform.Rotz = float.Parse(s[3]);
         }
 
     }

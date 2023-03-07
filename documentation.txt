@@ -21,10 +21,29 @@
             DisplayText.cs:177:         IntPtr font = loadFont("Fonts/calibri.ttf", size);
 
 
+- Bug fixes
+    - InputFramework now processes all event queue at every tick and has
+      expected behaviour;
+
 - Small changes
     
-    - Default update for gameObject is addToDraw(this) (should remove)
     - Added InputCodes
     
     - Added draw rectangles in Display and DisplaySDL
 
+    - GameObject don't initialize automatically now. Necessary for netcode.
+
+- Network system
+
+    - Added a whole system that manages all network communication
+    - Independent of all other systems. You can still make a game that doesn't
+      use any netcode.
+
+    - NetworkGame and NetworkObject are extensions from Game and GameObject
+      with usefull methods.
+    - NetworkManager: manages all communication of the form 
+      host -> multiple clients. The clients never communicate among them.
+    - NetworkFramework: the actual handler of the messages.
+
+    - Added the necessary code in Bootstrap to make it work.
+    

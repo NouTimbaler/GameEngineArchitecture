@@ -117,7 +117,7 @@ namespace Shard
             ToBeDestroyed = false;
             tags = new List<string>();
 
-            this.initialize();
+//            this.initialize();
 
         }
 
