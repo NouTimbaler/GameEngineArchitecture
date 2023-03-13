@@ -75,8 +75,9 @@ namespace Shard
                             game.updateState(a);
                         }
                         else if(this.IsClient)
-                        {//TODO: on disconnect
+                        {
                             this.stopClient();
+                            game.onDisconnect();
                         }
                     }
                     else if(message[1] == "DEL") {

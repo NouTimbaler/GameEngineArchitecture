@@ -83,6 +83,7 @@ namespace MyGame
                 changeSprite();
             }
 
+            Bootstrap.getDisplay().showText(id.ToString(), Transform.Centre.X, Transform.Centre.Y - Transform.Ht, 12, 255, 255, 255);
             Bootstrap.getDisplay().addToDraw(this);
         }
 

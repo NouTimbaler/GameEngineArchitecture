@@ -96,7 +96,6 @@ namespace Shard
 
         public virtual void update()
         {
-            Bootstrap.getDisplay().addToDraw(this);
         }
 
         public virtual void physicsUpdate()
@@ -111,7 +110,7 @@ namespace Shard
         {
             GameObjectManager.getInstance().addGameObject(this);
 
-            transform = new Transform3D(this);
+            this.transform = new Transform3D(this);
             visible = false;
 
             ToBeDestroyed = false;

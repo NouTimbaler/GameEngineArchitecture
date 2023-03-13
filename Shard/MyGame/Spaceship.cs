@@ -153,6 +153,7 @@ namespace MyGame
 
         public override void update()
         {
+            Bootstrap.getDisplay().showText(id.ToString(), Transform.Centre.X, Transform.Centre.Y - Transform.Ht, 12, 255, 255, 255);
             Bootstrap.getDisplay().addToDraw(this);
         }
 
@@ -181,12 +182,13 @@ namespace MyGame
 
         public string getState()
         {
+            string f = "no";
             if(fired)
             {
+                f = "fire";
                 fired = false;
-                return this.id + "," + "ship" + "," + Transform.X + "," + Transform.Y + "," + Transform.Rotz + "," + "fire";
             }
-            return this.id + "," + "ship" + "," + Transform.X + "," + Transform.Y + "," + Transform.Rotz + "," + "no";
+            return this.id + "," + "ship" + "," + Transform.X + "," + Transform.Y + "," + Transform.Rotz + "," + f;
         }
         public void updateState(string m)
         {

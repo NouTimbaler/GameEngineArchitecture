@@ -10,7 +10,7 @@ namespace Shard
 {
     class NetListener
     {
-        public const int PORT = 6000; // TODO: move to config
+        private readonly int PORT;
 
         private TcpListener socket;
         private IPEndPoint listenerEP;
@@ -22,9 +22,10 @@ namespace Shard
             socket.Start(100);
         }
 
-        public NetListener()
+        public NetListener(int port)
         {
-            listenerEP = new IPEndPoint(IPAddress.None, PORT);
+            PORT = port;
+            listenerEP = new IPEndPoint(IPAddress.None, port);
         }
 
         public void waitForConnections()
@@ -174,6 +175,7 @@ namespace Shard
             clients = new List<NetClient>();
             messages = new Queue<(NetClient, string)>();
             id = 0;
+
         }
 
         protected int pollMessage(out (NetClient, string) m)
@@ -206,19 +208,25 @@ namespace Shard
 
 
         // HOST methods
-        public void makeHost()
+        public bool makeHost()
         {
-            if(isHost || isClient) return;
+            if(isHost || isClient) return false;
 
-            isHost = true;
+            int port;
+            if (!Bootstrap.checkEnvironmentalVariable("port")) return false;
+            port = int.Parse(Bootstrap.getEnvironmentalVariable("port"));
+
             Debug.getInstance().log("NET: Im host");
-            host = new NetListener();
+            host = new NetListener(port);
             host.initialize();
+            isHost = true;
 
             //start new thread for the listen for connections loop
             Thread t = new Thread(host.waitForConnections);
             t.IsBackground = true;
             t.Start();
+
+            return true;
         }
 
         public void stopHost()
@@ -295,29 +303,33 @@ namespace Shard
 
 
         // CLIENT methods
-        public bool makeClient(string address, int port)
+        public bool makeClient()
         {
             if(isHost || isClient) return false;
+
+            int port;
+            if (!Bootstrap.checkEnvironmentalVariable("port")) return false;
+            port = int.Parse(Bootstrap.getEnvironmentalVariable("port"));
+
+            string address;
+            if (!Bootstrap.checkEnvironmentalVariable("ip")) return false;
+            address = Bootstrap.getEnvironmentalVariable("ip");
 
             IPAddress ip;
             if(address == "loopback") ip = IPAddress.Loopback;
             else ip = IPAddress.Parse(address);
 
-            if (ip.AddressFamily.ToString() == "InterNetwork")
-            {
-                Debug.getInstance().log("NET: Im client");
+            if (!(ip.AddressFamily.ToString() == "InterNetwork")) return false;
 
-                var ep = new IPEndPoint(ip, port);
-                client = new NetClient(ep);
+            var ep = new IPEndPoint(ip, port);
+            client = new NetClient(ep);
 
-                if (client.connect())
-                {
-                    client.start();
-                    isClient = true;
-                    return true;
-                }
-            }
-            return false;
+            if (!client.connect()) return false;
+
+            Debug.getInstance().log("NET: Im client");
+            client.start();
+            isClient = true;
+            return true;
         }
 
         protected void informHost(string s)
