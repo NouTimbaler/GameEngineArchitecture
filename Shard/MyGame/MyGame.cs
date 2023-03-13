@@ -8,58 +8,65 @@ using System.Text;
 
 namespace Shard
 {
-    class MyGame : NetworkGame, InputListener
+    class GameMyGame : NetworkGame, InputListener
     {
         GameObject background;
-        List<GameObject> asteroids;
+
+        MenuButton h, c;
+        bool buttons;
 
         Spaceship ship;
-        List<Spaceship> ships;
+        Alien alien;
+        List<Alien> aliens;
 
         public override void updateState(Message message)
         {
-            //Debug.getInstance().log("INSIDE GAME: " + m.message);
-
             if(message.type == "ADD")
             {
-                Spaceship t = new Spaceship(false);
-                t.initialize();
-                t.id = Int32.Parse(message.message);
-                ships.Add(t);
+                int id = Int32.Parse(message.message);
+                Alien a = createAlien(false, id);
+                aliens.Add(a);
             }
             else if(message.type == "ACC")
             {
-                ship.id = Int32.Parse(message.message);
+                alien.id = Int32.Parse(message.message);
             }
             else if(message.type == "DEL")
             {
-                Spaceship t = null;
+                Alien t = null;
                 int id = Int32.Parse(message.message);
-                foreach(Spaceship sh in ships)
+                foreach(Alien a in aliens)
                 {
-                    if(sh.id == id)
+                    if(a.id == id)
                     {
-                        sh.ToBeDestroyed = true;
-                        t = sh;
+                        a.ToBeDestroyed = true;
+                        t = a;
                         break;
                     }
                 }
-                if(t != null) ships.Remove(t);
+                if(t != null) aliens.Remove(t);
             }
             else if(message.type == "MESSAGE")
             {
                 string[] s = message.message.Split(",");
                 int id = Int32.Parse(s[0]);
-                foreach(Spaceship sh in ships)
+                string type = s[1];
+                if(type == "ship")
                 {
-                    if (sh.id == id)
+                    ship.updateState(message.message);
+                    if(s[5] == "fire") ship.fireBullet();
+                } 
+                else if(type == "alien")
+                {
+                    foreach(Alien a in aliens)
                     {
-                        sh.updateState(message.message);
-                        break;
+                        if (a.id == id)
+                        {
+                            a.updateState(message.message);
+                            break;
+                        }
                     }
-
                 }
-
             }
         }
 
@@ -68,36 +75,52 @@ namespace Shard
             string[] st = state.Split(":");
             foreach(string s in st)
             {
-                Spaceship t = new Spaceship(false);
-                t.initialize();
-                t.id = Int32.Parse(s.Split(",")[0]);
-                ships.Add(t);
-                t.updateState(s);
+                int id = Int32.Parse(s.Split(",")[0]);
+                string type = s.Split(",")[1];
+                if(type == "ship")
+                {
+                    ship = createShip(false, id);
+                    ship.updateState(s);
+                }
+                else if(type == "alien")
+                {
+                    Alien a = createAlien(false, id);
+                    aliens.Add(a);
+                    a.updateState(s);
+                }
             }
         }
 
         public override string getFullState()
         {
             string s = ship.getState();
-            foreach(Spaceship sh in ships)
+            foreach(Alien a in aliens)
             {
-                s = s + ":" + sh.getState();
+                s = s + ":" + a.getState();
             }
             return s;
         }
 
         public override string getState()
         {
-            string m = ship.getState();
-            //TODO: only send if host accepted or game started
-            
-            return m;
+            if(Bootstrap.getNetworkManager().IsHost)
+                return ship.getState();
+            if(Bootstrap.getNetworkManager().IsClient)
+                return alien.getState();
+            return "MESSAGE;hola";
         }
 
         public override void update()
         {
             
             Bootstrap.getDisplay().showText("FPS: " + Bootstrap.getSecondFPS() + " / " + Bootstrap.getFPS(), 10, 10, 12, 255, 255, 255);
+
+            if(!Bootstrap.getNetworkManager().IsHost && !Bootstrap.getNetworkManager().IsClient && !buttons)
+            {
+                clearGame();
+                createButtons();
+            }
+
         }
 
         public override int getTargetFrameRate()
@@ -112,19 +135,95 @@ namespace Shard
             background.Transform.X = 0;
             background.Transform.Y = 0;
 
-            ship = new Spaceship(true);
-            ship.initialize();
-            ships = new List<Spaceship>();
+            createButtons();
+        }
 
-            //createButtons();
+        public Spaceship createShip(bool own, int id)
+        {
+            Spaceship s = new Spaceship(own, id);
+            s.initialize();
+            return s;
+        }
+
+        public Alien createAlien(bool own, int id)
+        {
+            Alien a = new Alien(own, id);
+            a.initialize();
+            return a;
+        }
+        public void destroyAlien(Alien a)
+        {
+            if(alien != null && alien.id == a.id)
+            {
+                clearGame();
+            }
+
+            else
+            {
+                aliens.Remove(a);
+                a.ToBeDestroyed = true;
+            }
+        }
+        public void clearGame()
+        {
+            if(ship != null)
+                ship.ToBeDestroyed = true;
+            if(alien != null)
+                alien.ToBeDestroyed = true;
+            foreach(Alien al in aliens)
+            {
+                al.ToBeDestroyed = true;
+            }
+            aliens.Clear();
+            if(Bootstrap.getNetworkManager().IsHost)
+                Bootstrap.getNetworkManager().stopHost();
+            if(Bootstrap.getNetworkManager().IsClient)
+                Bootstrap.getNetworkManager().stopClient();
         }
 
         public void createButtons()
         {
-            MenuButton s = new MenuButton();
-            s.setUpButton("Server", 340, 400, 200, 100, Color.Black, Color.White, Color.Gray);
-            MenuButton c = new MenuButton();
-            c.setUpButton("Client", 740, 400, 200, 100, Color.Black, Color.White, Color.Gray);
+            h = new MenuButton();
+            h.initialize();
+            h.setUpButton("Host", 150, 175, 100, 50, Color.Black, Color.White, Color.Gray, beHost);
+            c = new MenuButton();
+            c.initialize();
+            c.setUpButton("Join", 350, 175, 100, 50, Color.Black, Color.White, Color.Gray, beClient);
+
+            buttons = true;
+        }
+
+        public void beHost()
+        {
+            if(!Bootstrap.getNetworkManager().IsHost)
+            {
+                Bootstrap.getNetworkManager().makeHost();
+                ship = createShip(true, 0);
+            }
+            buttons = false;
+            Bootstrap.getInput().removeListener(h);
+            Bootstrap.getInput().removeListener(c);
+            h.ToBeDestroyed = true;
+            c.ToBeDestroyed = true;
+
+        }
+        public void beClient()
+        {
+            if(!Bootstrap.getNetworkManager().IsClient)
+            {
+                string ip = "loopback";
+                if (!Bootstrap.getNetworkManager().makeClient(ip, 6000)) 
+                    Debug.getInstance().log("Something wrong");
+                else
+                {
+                    alien = createAlien(true, 0);
+                    buttons = false;
+                    Bootstrap.getInput().removeListener(h);
+                    Bootstrap.getInput().removeListener(c);
+                    h.ToBeDestroyed = true;
+                    c.ToBeDestroyed = true;
+                }
+            }
         }
 
         public override void initialize()
@@ -134,56 +233,33 @@ namespace Shard
             createObjects();
 
             MouseCollider mo = new MouseCollider();
+            mo.initialize();
 
-            asteroids = new List<GameObject>();
+            aliens = new List<Alien>();
         }
 
         public void handleInput(InputEvent inp, string eventType)
         {
 
-            if (eventType == "MouseDown") {
-                Console.WriteLine ("Pressing button " + inp.Button);
+            if (eventType == "MouseDown")
+            {
             }
 
             if (eventType == "MouseDown" && inp.Button == 1)
             {
-                //Asteroid asteroid = new Asteroid();
-                //asteroid.Transform.X = inp.X;
-                //asteroid.Transform.Y = inp.Y;
-                //asteroids.Add (asteroid);
             }
 
             if (eventType == "MouseDown" && inp.Button == 3)
             {
-                foreach (GameObject ast in asteroids) {
-                    ast.ToBeDestroyed = true;
-                }
-
-                asteroids.Clear();
             }
 
-            if (eventType == "KeyDown")
+            if (eventType == "KeyUp")
             {
-                if (inp.Key == InputCode.Shard_H)
+                if (inp.Key == InputCode.Shard_ESCAPE)
                 {
-                    if(!Bootstrap.getNetworkManager().IsHost)
-                    {
-                        Bootstrap.getNetworkManager().makeHost();
-                        ship.id = 0;
-                    }
-                    else 
-                        Bootstrap.getNetworkManager().stopHost();
-                }
-
-                if (inp.Key == InputCode.Shard_C)
-                {
-                    if(!Bootstrap.getNetworkManager().IsClient)
-                    {
-                        if (!Bootstrap.getNetworkManager().makeClient("loopback", 6000)) 
-                            Debug.getInstance().log("Something wrong");
-                    }
-                    else
-                        Bootstrap.getNetworkManager().stopClient();
+                    clearGame();
+                    if(!buttons)
+                        createButtons();
                 }
             }
         }

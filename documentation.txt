@@ -4,7 +4,7 @@
             sdl2, sdl2_mixer, sdl2_ttf, sdl2_image
         the packages names might differ for other distributions.
 
-    - Remove COM references from .csproj file and updet Framework to your
+    - Remove COM references from .csproj file and update .net Framework version to your
       version.
 
     - Change paths to linux paths: 
@@ -32,6 +32,8 @@
     - Added draw rectangles in Display and DisplaySDL
 
     - GameObject don't initialize automatically now. Necessary for netcode.
+
+    - Added mouse collider (you jsut have to enable it)
 
 - Network system
 

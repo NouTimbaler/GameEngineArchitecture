@@ -1,10 +1,6 @@
 
 namespace Shard
 {
-    class Message
-    {
-        public string message {get; set; }
-        public string type {get; set; }
         //NET
             //NEW new connecton as a host
             //ACC i have been accepted as a client
@@ -13,6 +9,10 @@ namespace Shard
             //DEAD host: client disconnected. client: can't reach host
             //DEL delete that player
         //MESSAGE actual message
+    class Message
+    {
+        public string message {get; set; }
+        public string type {get; set; }
 
         public string toString()
         {
@@ -28,6 +28,7 @@ namespace Shard
             NetworkGame game = ((NetworkGame)Bootstrap.getRunningGame());
             while (this.pollMessage(out m) >= 0)
             {
+
                 string[] message = m.Item2.Split(";");
                 NetClient c = m.Item1;
                 if(message[0] == "NET")

@@ -40,5 +40,6 @@ namespace Shard
         public static int Shard_Z       => (int)SDL.SDL_Scancode.SDL_SCANCODE_Z;
 
         public static int Shard_SPACE   => (int)SDL.SDL_Scancode.SDL_SCANCODE_SPACE;
+        public static int Shard_ESCAPE  => (int)SDL.SDL_Scancode.SDL_SCANCODE_ESCAPE;
     }
 }

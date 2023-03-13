@@ -9,6 +9,7 @@ namespace MyGame
         Color borderCol, col, hoverCol;
 
         bool hover;
+        Action act;
 
 
         public override void initialize()
@@ -20,7 +21,7 @@ namespace MyGame
             addTag("MenuButton");
         }
 
-        public virtual void setUpButton(string name, int x, int y, int w, int h, Color col, Color border, Color hov)
+        public virtual void setUpButton(string name, int x, int y, int w, int h, Color col, Color border, Color hov, Action a)
         {
             this.name = name;
 
@@ -32,6 +33,8 @@ namespace MyGame
             this.borderCol = border;
             this.col = col;
             this.hoverCol = hov;
+
+            act = a;
 
             setPhysicsEnabled();
 
@@ -57,10 +60,7 @@ namespace MyGame
 
         public virtual void action()
         {
-            if(name == "Server")
-                Debug.getInstance().log("server");
-            if(name == "Client")
-                Debug.getInstance().log("client");
+            act();
         }
 
         public void handleInput(InputEvent inp, string eventType)

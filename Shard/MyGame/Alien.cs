@@ -1,36 +1,44 @@
-﻿using SDL2;
-using Shard;
-using System.Drawing;
+﻿using Shard;
+using System;
+using System.Numerics;
 
 namespace MyGame
 {
-    class Spaceship : NetworkObject, InputListener, CollisionHandler
+    class Alien : NetworkObject, InputListener, CollisionHandler
     {
-        bool up, down, turnLeft, turnRight;
+        private int spriteToUse;
+        private string[] sprites;
+
+        private float animCounter;
+        private float timeToSwap;
+
+        bool up, down, left, right;
         int upKey, downKey, leftKey, rightKey;
 
-        bool fired;
-        
-        public Spaceship(bool own, int id) : base(own,id)
+        public Alien(bool own, int id) : base(own, id)
         {}
-
-        public override void disown()
-        {
-            Bootstrap.getInput().removeListener(this);
-            this.isOwner = false;
-        }
 
         public override void initialize()
         {
-            this.Transform.X = 400.0f;
-            this.Transform.Y = 300.0f;
-            this.Transform.SpritePath = Bootstrap.getAssetManager().getAssetPath("spaceship.png");
+            sprites = new string[2];
+            sprites[0] = "invader1.png";
+            sprites[1] = "invader2.png";
+            spriteToUse = 0;
+            timeToSwap = 0.5f;
+
+            Random rnd = new Random();
+            int x  = rnd.Next(20, 580);
+            int y  = rnd.Next(20, 380);
+            this.Transform.X = (float)x;
+            this.Transform.Y = (float)y;
+            this.Transform.SpritePath = Bootstrap.getAssetManager().getAssetPath(sprites[spriteToUse]);
 
             if(this.isOwner) Bootstrap.getInput().addListener(this);
 
             up = false;
             down = false;
-            fired = false;
+            left = false;
+            right = false;
 
             upKey = InputCode.Shard_W;
             downKey = InputCode.Shard_S;
@@ -39,10 +47,8 @@ namespace MyGame
 
             setPhysicsEnabled();
 
-            MyBody.Mass = 1;
-            MyBody.MaxForce = 10;
-            MyBody.MaxTorque = 5;
-            MyBody.AngularDrag = 0.5f;
+            MyBody.Mass = 1.2f;
+            MyBody.MaxForce = 7;
             MyBody.Drag = 0.5f;
             MyBody.StopOnCollision = false;
             MyBody.ReflectOnCollision = false;
@@ -52,22 +58,32 @@ namespace MyGame
 
             MyBody.addRectCollider();
 
-            addTag("Spaceship");
+            addTag("Alien");
         }
 
-        public void fireBullet()
+
+        public void changeSprite()
         {
+            spriteToUse += 1;
 
-            Bullet b = new Bullet();
-            b.initialize();
+            if (spriteToUse >= sprites.Length)
+            {
+                spriteToUse = 0;
+            }
 
-            b.setupBullet(this, this.Transform.Centre.X, this.Transform.Centre.Y);
+            this.Transform.SpritePath = Bootstrap.getAssetManager().getAssetPath(sprites[spriteToUse]);
+        }
 
-            b.Transform.rotate(this.Transform.Rotz);
-            
-            fired = true;
+        public override void update()
+        {
+            animCounter += (float)Bootstrap.getDeltaTime();
+            if (animCounter > timeToSwap)
+            {
+                animCounter -= timeToSwap;
+                changeSprite();
+            }
 
-            //Bootstrap.getSound().playSound("fire.wav");
+            Bootstrap.getDisplay().addToDraw(this);
         }
 
         public void handleInput(InputEvent inp, string eventType)
@@ -86,12 +102,12 @@ namespace MyGame
 
                 if (inp.Key == rightKey)
                 {
-                    turnRight = true;
+                    right = true;
                 }
 
                 if (inp.Key == leftKey)
                 {
-                    turnLeft = true;
+                    left = true;
                 }
 
             }
@@ -109,20 +125,12 @@ namespace MyGame
 
                 if (inp.Key == rightKey)
                 {
-                    turnRight = false;
+                    right = false;
                 }
 
                 if (inp.Key == leftKey)
                 {
-                    turnLeft = false;
-                }
-            }
-
-            if (eventType == "KeyUp")
-            {
-                if (inp.Key == InputCode.Shard_SPACE)
-                {
-                    fireBullet();
+                    left = false;
                 }
             }
         }
@@ -130,63 +138,51 @@ namespace MyGame
         public override void physicsUpdate()
         {
 
-            if (turnLeft)
+            if (left)
             {
-                MyBody.addTorque(-1f);
+                MyBody.addForce(new Vector2(1, 0), -1f);
             }
 
-            if (turnRight)
+            if (right)
             {
-                MyBody.addTorque(1f);
+                MyBody.addForce(new Vector2(1, 0), 1f);
             }
 
             if (up)
             {
-                MyBody.addForce(this.Transform.Forward, 1f);
+                MyBody.addForce(new Vector2(0, -1), 1f);
             }
 
             if (down)
             {
-                MyBody.addForce(this.Transform.Forward, -1f);
+                MyBody.addForce(new Vector2(0, -1), -1f);
             }
-        }
-
-        public override void update()
-        {
-            Bootstrap.getDisplay().addToDraw(this);
         }
 
         public void onCollisionEnter(PhysicsBody x)
         {
-            if (x.Parent.checkTag("Bullet") == false)
+            if (x.Parent.checkTag("Bullet"))
             {
-                MyBody.DebugColor = Color.Red;
+                ((GameMyGame)Bootstrap.getRunningGame()).destroyAlien(this);
             }
         }
 
         public void onCollisionExit(PhysicsBody x)
         {
-            MyBody.DebugColor = Color.Green;
         }
 
         public void onCollisionStay(PhysicsBody x)
         {
-            MyBody.DebugColor = Color.Blue;
         }
 
         public override string ToString()
         {
-            return "Spaceship: [" + Transform.X + ", " + Transform.Y + ", " + Transform.Wid + ", " + Transform.Ht + "]";
+            return "Alien: [" + Transform.X + ", " + Transform.Y + ", " + Transform.Wid + ", " + Transform.Ht + "]";
         }
 
         public string getState()
         {
-            if(fired)
-            {
-                fired = false;
-                return this.id + "," + "ship" + "," + Transform.X + "," + Transform.Y + "," + Transform.Rotz + "," + "fire";
-            }
-            return this.id + "," + "ship" + "," + Transform.X + "," + Transform.Y + "," + Transform.Rotz + "," + "no";
+            return this.id + ",alien," + Transform.X + "," + Transform.Y;
         }
         public void updateState(string m)
         {
@@ -194,8 +190,8 @@ namespace MyGame
             
             Transform.X = float.Parse(s[2]);
             Transform.Y = float.Parse(s[3]);
-            Transform.Rotz = float.Parse(s[4]);
         }
 
     }
 }
+

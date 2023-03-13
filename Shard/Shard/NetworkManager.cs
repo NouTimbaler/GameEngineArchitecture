@@ -58,8 +58,9 @@ namespace Shard
     {
         public int id {get; set; }
         private readonly TcpClient socket;
-        private readonly Stream stream;
+        private Stream stream;
         private readonly bool isHost;
+        private readonly IPEndPoint ep;
 
         private static string separator = "<end>";
 
@@ -69,19 +70,26 @@ namespace Shard
             stream = sock.GetStream();
             isHost = true;
         }
-        public NetClient(IPEndPoint ep)
+        public NetClient(IPEndPoint e)
         {
             socket = new TcpClient();
-            while(!socket.Connected) //TODO: don't block heh / make new thread directly maybe
-            {
-                try
-                {
-                    socket.Connect(ep);
-                }
-                catch {}
-            }
-            stream = socket.GetStream();
+            ep = e;
             isHost = false;
+        }
+        public bool connect()
+        {
+            if(isHost) return false;
+            try
+            {
+                socket.Connect(ep);
+                stream = socket.GetStream();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
         }
         public void send(string message)
         {
@@ -128,7 +136,7 @@ namespace Shard
                     }
                 }
             }
-            catch //IOException ObjectDisposedException
+            catch(Exception ex) //IOException ObjectDisposedException
             {
                 Debug.getInstance().log("NET: Client communication error");
             }
@@ -187,6 +195,11 @@ namespace Shard
                 messages.Enqueue((p, m));
         }
 
+        public bool active()
+        {
+            return isHost || isClient;
+        }
+
         public virtual void initialize(){}
         public virtual void getMessage(){}
         public virtual void informState(){}
@@ -221,6 +234,8 @@ namespace Shard
                 clients.Clear();
             }
             isHost = false;
+            lock(queueLock)
+                messages.Clear();
         }
 
         protected void informClients(NetClient sender, string m)
@@ -246,8 +261,6 @@ namespace Shard
 
         protected void addClient(NetClient client)
         {
-            
-            //if (clients.Contains(client)) return;
             client.id = getNewId();
             client.send("NET;ACC;" + client.id.ToString()); //IMPORTANT ACCEPTED Message
             Debug.getInstance().log("NET: New connection accepted");
@@ -286,18 +299,23 @@ namespace Shard
         {
             if(isHost || isClient) return false;
 
-            //var ip = IPAddress.Parse(address); //TODO: test this line
-            var ip = IPAddress.Loopback;
+            IPAddress ip;
+            if(address == "loopback") ip = IPAddress.Loopback;
+            else ip = IPAddress.Parse(address);
+
             if (ip.AddressFamily.ToString() == "InterNetwork")
             {
-                isClient = true;
                 Debug.getInstance().log("NET: Im client");
 
                 var ep = new IPEndPoint(ip, port);
                 client = new NetClient(ep);
-                client.start();
 
-                return true;
+                if (client.connect())
+                {
+                    client.start();
+                    isClient = true;
+                    return true;
+                }
             }
             return false;
         }
@@ -320,6 +338,8 @@ namespace Shard
             if (!isClient) return;
             client.stop();
             isClient = false;
+            lock(queueLock)
+                messages.Clear();
         }
     }
 }

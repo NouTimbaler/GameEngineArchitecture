@@ -283,6 +283,9 @@ namespace Shard
                 // Clear the screen.
                 Bootstrap.getDisplay().clearDisplay();
 
+                // NetCode
+                net.getMessage();
+
                 // Update 
                 runningGame.update();
                 // Input
@@ -290,7 +293,6 @@ namespace Shard
                 if (runningGame.isRunning() == true)
                 {
 
-                    net?.getMessage();
 
                     // Get input, which works at 50 FPS to make sure it doesn't interfere with the 
                     // variable frame rates.
@@ -323,9 +325,10 @@ namespace Shard
                         phys.drawDebugColliders();
                     }
 
-                    net?.informState();
-
                 }
+
+                if(net.active())
+                    net.informState();
 
                 // Render the screen.
                 Bootstrap.getDisplay().display();

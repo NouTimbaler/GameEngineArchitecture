@@ -48,7 +48,6 @@ namespace MyGame
             Random r = new Random();
             Color col = Color.FromArgb(r.Next(0, 256), r.Next(0, 256), 0);
 
-
             Bootstrap.getDisplay().drawLine(
                 (int)Transform.X,
                 (int)Transform.Y,
@@ -62,8 +61,6 @@ namespace MyGame
                 (int)Transform.X,
                 (int)Transform.Y + 10,
                 col);
-
-
         }
 
         public void onCollisionEnter(PhysicsBody x)
@@ -85,7 +82,7 @@ namespace MyGame
 
         public override string ToString()
         {
-            return "Bullet: " + Transform.X + ", " + Transform.X;
+            return "Bullet: " + Transform.X + ", " + Transform.Y;
         }
     }
 }
