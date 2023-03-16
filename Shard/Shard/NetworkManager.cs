@@ -86,8 +86,9 @@ namespace Shard
                 stream = socket.GetStream();
                 return true;
             }
-            catch
+            catch(Exception e)
             {
+                Debug.getInstance().log(e.ToString());
                 return false;
             }
 
@@ -220,6 +221,7 @@ namespace Shard
             host = new NetListener(port);
             host.initialize();
             isHost = true;
+            id = 0;
 
             //start new thread for the listen for connections loop
             Thread t = new Thread(host.waitForConnections);

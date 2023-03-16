@@ -1,51 +1,201 @@
-- Linux compatibility
+Game Engine Architecture - Ferran Maria Toda i Casaban
 
-    - Install linux packages for sdl2:
-            sdl2, sdl2_mixer, sdl2_ttf, sdl2_image
-        the packages names might differ for other distributions.
+In this document are listed all the features implemented that deserve grading.
+The biggest part of the project is a network system to build online games and a
+simple game showing how it works.
 
-    - Remove COM references from .csproj file and update .net Framework version to your
-      version.
+The only person responsible for this project is myself, Ferran Toda.
 
-    - Change paths to linux paths: 
-        Bootstrap.cs:63:            setupEnvironmentalVariables(baseDir + "\\" + "envar.cfg");
-        Bootstrap.cs:64:            setup(baseDir + "\\" + DEFAULT_CONFIG);
-        AssetManager.cs:27:         string[] bits = path.Split ("\\");
+The expected grade in its totallity is 53 Points. Below is a description of
+every feature with individual grade estimations.
+I'm not sure the the grade estimations are fair since they were not negotiated
+with Michael so feel free to discuss them further back with me.
 
-    - Change the comically large number of .Parent calls:
-        Bootstrap.cs:61:            baseDir = Directory.GetParent(workDir).Parent.Parent.Parent.Parent.FullName;
 
-    - Install/change font:
-        my solution was to install the Calibri font in a Fonts folder in the
-        base directory of the project.
+BUG FIX: InputFramework event processing bug.  
+
+        - What the bug is: 
+            InputFramework only processes one input event at every tick. So when 
+            the queue fills up the player will have to wait for the framework to
+            process all the events to be able to react to any new input events.
+            And this could take several seconds.
+
+        - How can it be reproduced:
+            Send a great amount of input events to the system (on my machine
+            moving the mouse for a while was enough).
+
+        - What classification should it have:
+            Moderate bug-fix. 4 Points.
+            Although fixing the bug was not a big deal, figuring out what it
+            was brought some headaches. The bug could mess with some
+            games/projects that included mouse movement or that needed a lot of
+            inputs, like having multiple players.
+
+        - Source code fix:
+            - change from:
+                InputFramework.cs:38:
+                    res = SDL.SDL_PollEvent(out ev);
+                        if (res != 1)
+                        {
+                            return;
+                        }
+            - to:
+                 InputFramework.cs:34:      while (SDL.SDL_PollEvent(out ev) == 1)
+                    (Put everything inside the while until line 104)
+
+            This way the framework processes all the events recieved since the
+            last tick.
+
+
+    
+Linux compatibility. 
+    
+    List of actions and changes to be made to the project given by Michael
+    to make it run on Linux. A seasoned Linux user could figure them out by
+    their own. Nonetheless, I documented them for any unexperienced user.
+
+    - Grading expectation:
+        Modederate Extension: 8 Points.
+
+    - List mentioned:
+
+        - Install linux packages for .net development:
+                dotnet-sdk, dotnet-runtime
+            These are the package names for ArchLinux, the package names might
+            differ for other distributions.
+
+        - Install linux packages for sdl2:
+                sdl2, sdl2_mixer, sdl2_ttf, sdl2_image
+            These are the package names for ArchLinux, the package names might
+            differ for other distributions.
+
+        - Remove COM references from the .csproj file and update .net Framework version 
+          to your version.
+
+        - Change paths to linux paths: 
+            Bootstrap.cs:63:            setupEnvironmentalVariables(baseDir + "/" + "envar.cfg");
+            Bootstrap.cs:64:            setup(baseDir + "/" + DEFAULT_CONFIG);
+            AssetManager.cs:27:         string[] bits = path.Split ("/");
+
+        - Change the comically large number of .Parent calls:
+            Bootstrap.cs:61:            baseDir = Directory.GetParent(workDir).FullName;
+
+        - Install/change font:
+            my solution was to install the Calibri font in a Fonts folder in the
+            base directory of the project.
             DisplayText.cs:177:         IntPtr font = loadFont("Fonts/calibri.ttf", size);
 
+        - Compile and run.
+            The command "dotnet build" will build the project and place an
+            executable in the bin folder.
+            The command "dotnet run" will build the project and run it
+            afterwards.
 
-- Bug fixes
-    - InputFramework now processes all event queue at every tick and has
-      expected behaviour;
 
-- Small changes
+Small features.
+
+    List of small features implemented to make the engine smoother with their
+    individual grading expectation.
+
+    - InputCodes. Minor Extension: 2 Points.
+        
+        - Added InputCodes.cs file to make any game and any game objects unaware of
+          the input system used. In this case this file basically translates
+          SDLs input codes to "Shard" codes. Should be extended with any other
+          codes used like numbers or arrows.
+
     
-    - Added InputCodes
+    - Draw rectangles in Display and DisplaySDL. Minor Extension: 5 Points.
+        
+        - Added an easy way to draw rectangles in a similar way to how circles
+          are drawn. It accepts position, size, color and filled/unfilled:
+            - Display.cs:50 to Display.cs:66
+            - Rectangle class in DisplaySDL.cs:52
+            - DisplaySDL.cs:226 to DisplaySDL.cs:259
+            - DisplaySDL.cs:304 to DisplaySDL.cs:316
+
+
+    - Mouse collider. Minor Extension: 4 Points.
+        - Added a collider that follows the mouse movement to make clicking and
+          hovering over other objects easy.
+
+        - Easy to use: look for the collision body called "mouse".
+
+        - Can be found at MouseCollider.cs
+        
+
+Implementation of a subsystem: Network Manager
     
-    - Added draw rectangles in Display and DisplaySDL
+    - Description
+        Implementation of a Network Manager into Shard. All the network code is
+        built independently from any original Shard code so you can still build
+        classic games in my engine. The communication between different online
+        players is done similarly to the input system.
 
-    - GameObject don't initialize automatically now. Necessary for netcode.
+    - NetworkManager.cs
+        This file contains all the thechnology needed for the online
+        communication. Classes for the host and the client and a Manager class
+        to get everything running. It uses TCP protocol with stream based
+        communication. 
+        The system works by having one host to multiple clients to avoid any
+        synchronization problems because all messsages will go through the
+        host.
+        All messagess recieved will be put into a messages queue in the
+        recieved order to be consumed by the game.
 
-    - Added mouse collider (you jsut have to enable it)
+    - NetworkFramework.cs
+        This file contains the message logic for the system. It handles the
+        system messages (like adding a new player or losing the connection) and
+        leaves the state update messages to be processed by the game.
+        It consumes all the messages from the queue every iteration of the game
+        loop.
 
-- Network system
-
-    - Added a whole system that manages all network communication
-    - Independent of all other systems. You can still make a game that doesn't
-      use any netcode.
+        These are the message types currently handled:
+        NET
+            NEW new connecton as a host
+            ACC i have been accepted as a client
+            STATE spawn in this state
+            ADD add new player
+            DEAD host: client disconnected. client: can't reach host
+            DEL delete that player
+        MESSAGE actual message for a state update.
 
     - NetworkGame and NetworkObject are extensions from Game and GameObject
-      with usefull methods.
-    - NetworkManager: manages all communication of the form 
-      host -> multiple clients. The clients never communicate among them.
-    - NetworkFramework: the actual handler of the messages.
+      with usefull methods to be implemented for the network communication to
+      work.
 
     - Added the necessary code in Bootstrap to make it work.
+        Creating the network object and also 2 actions in the game loop:
+        processing the recieved messages and sending state update.
+
+    - Removed the call to initialize in the constructor of a gameObject.
+        This change made it more consistent with the whole engine.
+
+    - Grade expectation: 15 Points.
+        
+
+- Game MyGame
+
+    -Description:
+        It is a pretty basic game with recycled assets from the example games.
+        It has a menu where you can select either to host a game or join a
+        game. You need to write the ip and port of the game you are joining in
+        the envar.cfg file.
+
+        The host of the game will control the spaceship. Can move with wasd and
+        shoot with spacebar. The other players can move the alien with wasd. 
+
+        The objective for the host is to strike the aliens with a bullet and
+        the aliens have to dodge the bullets. When an alien is shot, its player
+        will be sent back to the menu disconnecting them from the game and
+        showing how much time has the alien survived in the game.
+
+        At any moment any player can press the escape button to go back to the
+        menu.
+
+    - Grade expectation: 15 Points.
+        Although the game shows all the new features built, like the network or
+        the mouse and drawing rectangles for the menu buttons, it lacks a bit
+        of depth such as changing the owner of the spaceship or having maps
+        with obstacles or walls.
     

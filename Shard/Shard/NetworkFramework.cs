@@ -25,7 +25,13 @@ namespace Shard
         public override void getMessage()
         {
             (NetClient, string) m;
-            NetworkGame game = ((NetworkGame)Bootstrap.getRunningGame());
+            NetworkGame game;
+            try
+            {
+                game = ((NetworkGame)Bootstrap.getRunningGame());
+            }
+            catch {return;}
+
             while (this.pollMessage(out m) >= 0)
             {
 
